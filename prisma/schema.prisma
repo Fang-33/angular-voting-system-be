@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid()) // 用戶 ID
+  username    String       @unique // 用戶名
+  email       String       @unique // 郵箱
+  password    String // 密碼（需加密存儲）
+  created_at  DateTime     @default(now()) // 創建時間
+  updated_at  DateTime     @updatedAt // 更新時間
+  polls       Poll[] // 用戶創建的投票活動
+  voteRecords VoteRecord[] // 用戶的投票記錄
+}
+
+model Poll {
+  id           String       @id @default(uuid()) // 投票活動 ID
+  title        String // 投票標題
+  description  String // 投票描述（Markdown）
+  created_by   String // 創建者 ID（關聯到 User）
+  created_at   DateTime     @default(now()) // 創建時間（同時作為開始時間）
+  updated_at   DateTime     @updatedAt // 更新時間
+  end_time     DateTime // 結束時間
+  is_anonymous Boolean      @default(false) // 是否為匿名投票
+  options      Option[] // 投票選項
+  voteRecords  VoteRecord[] // 投票記錄
+  user         User         @relation(fields: [created_by], references: [id], onDelete: Cascade) // 關聯到 User
+}
+
+model Option {
+  id          String       @id @default(uuid()) // 選項 ID
+  poll_id     String // 關聯的投票活動 ID
+  text        String // 選項文本
+  sequence    Int // 選項順序
+  poll        Poll         @relation(fields: [poll_id], references: [id]) // 關聯到 Poll
+  voteRecords VoteRecord[] @relation("OptionToVoteRecord") // 關聯的投票記錄
+}
+
+model VoteRecord {
+  id         String   @id @default(uuid()) // 投票記錄 ID
+  poll_id    String // 關聯的投票活動 ID
+  option_id  String // 關聯的選項 ID
+  user_id    String // 投票用戶 ID
+  created_at DateTime @default(now()) // 創建時間
+  updated_at DateTime @updatedAt // 更新時間
+  poll       Poll     @relation(fields: [poll_id], references: [id], onDelete: Cascade) // 關聯到 Poll
+  option     Option   @relation("OptionToVoteRecord", fields: [option_id], references: [id], onDelete: Cascade) // 關聯到 Option
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade) // 關聯到 User
+}
