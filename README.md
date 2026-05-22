@@ -4,6 +4,8 @@
 
 這是一個基於 Node.js 和 Express 的投票系統後端專案，使用 Prisma 作為 ORM 工具，並與 PostgreSQL 數據庫集成。專案提供了用戶註冊、登入、投票活動管理、投票記錄等功能。
 
+> 後端基礎架構由主管建立，本人參與部分功能開發與部分 Docker 部署設定。
+
 ## Technical Stack
 
 - **後端框架**: [Express](https://expressjs.com/)
